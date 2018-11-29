@@ -4,7 +4,7 @@ This method refers to the model proposed in "Bilateral Multi-Perspective Matchin
 ## Requirements
 All code is written in Python3. You may install the required packages by running the following command.
 ```
-pip3 install -r requirements
+pip3 install -r requirements.txt
 ```
 
 ## Training
