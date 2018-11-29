@@ -108,17 +108,22 @@ def BiMPM(question_embedding_inputs, comment_embedding_inputs, dropout_rate):
 def W2VRNN(word_index, embedding_matrix, modelname, worddim, subtask):
     print('start training w2v')
     question_inputs = Input(shape=(40,))
-    question_embedding_inputs = Embedding(len(word_index), worddim, weights=[embedding_matrix], trainable=False)(question_inputs)
     comment_inputs = Input(shape=(40,))
-    comment_embedding_inputs = Embedding(len(word_index), worddim, weights=[embedding_matrix], trainable=False)(comment_inputs)
+    if subtask == 'B':
+        question_embedding_inputs = Embedding(len(word_index), worddim, weights=[embedding_matrix], trainable=False)(question_inputs)
+        comment_embedding_inputs = Embedding(len(word_index), worddim, weights=[embedding_matrix], trainable=False)(comment_inputs)
+    elif subtask == 'A' or subtask == 'C':
+        question_embedding_inputs = Embedding(len(word_index), worddim, weights=[embedding_matrix], trainable=True)(question_inputs)
+        comment_embedding_inputs = Embedding(len(word_index), worddim, weights=[embedding_matrix], trainable=True)(comment_inputs)
+
     # RNN 
     # return_sequence = False
     
     dropout_rate = 0.5
-    if subtask == 'A' or subtask == 'C':
-        RNN_output = BiMPM(question_embedding_inputs, comment_embedding_inputs, dropout_rate)
-    elif subtask == 'B':
-        RNN_output = BiLSTM(question_embedding_inputs, comment_embedding_inputs, dropout_rate)
+    # if subtask == 'A' or subtask == 'C':
+    RNN_output = BiMPM(question_embedding_inputs, comment_embedding_inputs, dropout_rate)
+    #elif subtask == 'B':
+        #RNN_output = BiLSTM(question_embedding_inputs, comment_embedding_inputs, dropout_rate)
         
     outputs = Dense(16, 
                     activation='relu',
@@ -190,9 +195,9 @@ def main():
                                  monitor='val_acc',
                                  save_weights_only=False,
                                  mode='max')
-    model.fit([train_Q, train_C], train_Y, epochs=20, batch_size=512, validation_split=0.1, shuffle=True, callbacks=[earlystopping, checkpoint], class_weight=class_weights)
+    model.fit([train_Q, train_C], train_Y, epochs=40, batch_size=512, validation_split=0.1, shuffle=True, callbacks=[earlystopping, checkpoint], class_weight=class_weights)
     
     
 
 if __name__ == '__main__':
-    main()
+   main()
