@@ -22,6 +22,16 @@ args = parser.parse_args()
 
 
 def outputA(qidlist, result, modelname):
+    """
+        The function which writes prediction file of subtaskA
+        Arguments:
+            qidlist: A list of RELC_ID
+            result: 2D numpy array, the output of the model
+            modelname: String, modelname
+        Outputs:
+            subtaskA/result/[modelname]/res.pred
+    """
+    
     outdir = os.path.join("subtaskA","result", modelname)
     if not os.path.isdir(outdir):
         os.makedirs(outdir)
@@ -43,6 +53,15 @@ def outputA(qidlist, result, modelname):
             f.write('\n')
 
 def outputB(qidlist, result, modelname):
+    """
+        The function which writes prediction file of subtaskB
+        Arguments:
+            qidlist: A list of RELC_ID
+            result: 2D numpy array, the output of the model
+            modelname: String, modelname
+        Outputs:
+            subtaskB/result/[modelname]/res.pred
+    """
     outdir = os.path.join("subtaskB","result", modelname)
     if not os.path.isdir(outdir):
         os.makedirs(outdir)
@@ -64,6 +83,15 @@ def outputB(qidlist, result, modelname):
             f.write('\n')
 
 def outputC(qidlist, result, modelname):
+    """
+        The function which writes prediction file of subtaskB
+        Arguments:
+            qidlist: A list of RELC_ID
+            result: 2D numpy array, the output of the model
+            modelname: String, modelname
+        Outputs:
+            subtaskC/result/[modelname]/res.pred
+    """
     outdir = os.path.join("subtaskC", "result", modelname)
     if not os.path.isdir(outdir):
         os.makedirs(outdir)
@@ -85,6 +113,14 @@ def outputC(qidlist, result, modelname):
             f.write('\n')
 
 def main():
+    """ Main function of test.py
+    Arguments:
+        modelname: String, name of the model
+        datapath: The testing file
+        subtask: String, "A" or "B" or "C"
+    Outputs:
+        subtask + [subtask]/result/[modelname]/res.pred
+    """ 
     modelname = args.modelname
     datapath = args.datapath
     subtask = args.subtask 

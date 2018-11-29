@@ -31,9 +31,16 @@ parser.add_argument('--worddim', default='100')
 args = parser.parse_args()
 
 def crop(dimension, start, end):
-    # Crops (or slices) a Tensor on a given dimension from start to end
-    # example : to crop tensor x[:, :, 5:10]
-    # call slice(2, 5, 10) as you want to crop on the second dimension
+    """
+        Crops (or slices) a Tensor on a given dimension from start to end
+        example : to crop tensor x[:, :, 5:10], call slice(2, 5, 10) as you want to crop on the second dimension
+        Arguments:
+            dimension: Integer, the dimension which you want to crop
+            start: Integer, the start index of the cropped tensor
+            end: Integer, the end index of the cropped tensor
+        Returns:
+            Lambda(func)
+    """
     def func(x):
         if dimension == 0:
             return x[start: end]
@@ -47,25 +54,20 @@ def crop(dimension, start, end):
             return x[:, :, :, :, start: end]
     return Lambda(func)
 
-def BiLSTM(question_embedding_inputs, comment_embedding_inputs, dropout_rate):
-    Question_LSTM_cell = LSTM(64,
-                             return_sequences=False, 
-                             dropout=dropout_rate)
-    # Question_GRU_cell = GRU(32,
-    #                         return_sequences=False, 
-    #                         dropout=dropout_rate)
-    # Comment_LSTM_cell = Bidirectional(GRU(64,
-    #                                   return_sequences=False, 
-    #                                   dropout=dropout_rate))
-    question_output = Question_LSTM_cell(question_embedding_inputs)
-    # question_output = Question_GRU_cell(question_embedding_inputs)
-    comment_output = Question_LSTM_cell(comment_embedding_inputs)
-    # comment_output = Question_GRU_cell(comment_embedding_inputs)
-    RNN_output = concatenate([question_output, comment_output])
-    
-    return RNN_output 
 
 def BiMPM(question_embedding_inputs, comment_embedding_inputs, dropout_rate):
+    """
+        The network architecture of the recurrent neural networks and bilateral matching layer.
+        The input embeddings are each fed into a bidirectional GRU which returns a sequence, forming the context representation layer. Later, the two sequences in the context representation layer are fed into a matching layer. The matching layer outputs two matched sequences and feed the sequences into two bidirectional GRUs. Finally, I concatenate the outputs of the two GRUs and return it.
+
+        Arguments:
+            question_embedding_inputs: The embeddings of question sentence
+            comment_embedding_inputs: The embeddings of comment sentence
+            dropout_rate: Float, dropout rate
+        Returns:
+            RNN_output: A tensor which will be fed into a feed forward neural network and a softmax layer
+    """
+        
     Question_LSTM_cell = Bidirectional(GRU(64, 
                                        return_sequences=True, 
                                        dropout=dropout_rate))
@@ -106,6 +108,18 @@ def BiMPM(question_embedding_inputs, comment_embedding_inputs, dropout_rate):
     return RNN_output
 
 def W2VRNN(word_index, embedding_matrix, modelname, worddim, subtask):
+    """
+        This function defines the model. The model has two inputs, representing the natural language sentence pair and one output. 
+        Arguments:
+            word_index: A dictionary mapping word to index
+            embedding_matrix: A numpy array having a size of worddim * vocabulary size
+            modelname: String, name of the model
+            worddim: Integer, The dimension of word vectors
+            subtask: String, "A" or "B" or "C"
+
+        Returns:
+            model: A keras model
+    """
     print('start training w2v')
     question_inputs = Input(shape=(40,))
     comment_inputs = Input(shape=(40,))
@@ -120,10 +134,7 @@ def W2VRNN(word_index, embedding_matrix, modelname, worddim, subtask):
     # return_sequence = False
     
     dropout_rate = 0.5
-    # if subtask == 'A' or subtask == 'C':
     RNN_output = BiMPM(question_embedding_inputs, comment_embedding_inputs, dropout_rate)
-    #elif subtask == 'B':
-        #RNN_output = BiLSTM(question_embedding_inputs, comment_embedding_inputs, dropout_rate)
         
     outputs = Dense(16, 
                     activation='relu',
@@ -144,14 +155,17 @@ def W2VRNN(word_index, embedding_matrix, modelname, worddim, subtask):
     
 
 def main():
-    """ Main function of test.py
+    """ Main function of train_bimpm.py
     Arguments:
         modelname: Name your model!
-        test_insult_file: csv file, the columns are {id, content}
-        test_noninsult_file: csv file, the columns are {id, content}
+        train_file: Training data file
+        subtask: "A" or "B" or "C"
+        worddim: The dimension of word embedding, 100 or 200
     Outputs:
-        [modelname]/model.h5: Trained model
-        [modelname]/characters.tk: Character token file
+        subtask + [subtask]/models/[modelname]/model.h5: Trained model
+        subtask + [subtask]/models/[modelname]/idx2word.pkl: A dictionary mapping index to word
+        subtask + [subtask]/models/[modelname]/word2idx.pkl: A dictionary mapping word to index
+        subtask + [subtask]/models/[modelname]/modelsummary.txt: Summary of the model 
     """
 
     modelname = args.modelname

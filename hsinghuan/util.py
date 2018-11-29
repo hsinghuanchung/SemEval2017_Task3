@@ -11,21 +11,31 @@ import gensim.downloader as api
 
 class DataManager:
     def __init__(self, subtask):
-        """ self.data is a dictionary which stores training and testing data.
+        """ 
+        self.data is a dictionary which stores training and testing data.
         Key:
-            The key specifies the properties of different dataset
-            (e.g. train_insult, train_noninsult, test_insult, test_noninsult)
+            The key specifying the properties of different dataset, "train" or "test"
         Value:
             The value is a list [X,Y], where...
-            X is a list of comments,
-            Y is a list of corresponding ground truth.
+            X is a list of question comment pairs or question question pairs
+            Y is a list of corresponding label. Y is None if the key is "test".
+
+        self.categorymap is a dictionary which maps label to float value
         """
         self.data = {}
         if subtask == 'A' or subtask == 'C':
             self.categorymap = {'__label__Bad': 0.0, '__label__Good': 1.0, '__label__PotentiallyUseful': 0.0}
         elif subtask == 'B':
             self.categorymap = {'__label__Irrelevant': 0.0, '__label__Relevant': 1.0, '__label__PerfectMatch': 1.0}
+    
     def add_data(self, key, data_path):
+        """
+        Reads training or testing data and store it into self.data.
+        Arguments:
+            key: "train" or "test"
+            data_path: The training data file or testing data file
+
+        """
         print('read ' + key)
         if key == 'train':
             X = []
@@ -52,22 +62,12 @@ class DataManager:
             self.data['test'] = [X] 
             self.qidlist = qidlist
 
-    # def tokenize(self, vocab_size):
-    #     """ Assign each character with an index
-    #     Arguments:
-    #         vocab_size: The maximum number of characters to assign indices.
-    #     """
-    #     print('create new tokenizer')
-    #     self.tokenizer = Tokenizer(num_words=vocab_size, lower=False, filters='')
-    #     texts = self.data['train'][0]
-    #     self.tokenizer.fit_on_texts(texts)
-
-    #     self.tokenizer.word_index = {e: i for e, i in self.tokenizer.word_index.items() if i <= vocab_size}
     
     def tokenize(self, wordvec_path):
-        """ Assign each character with an index
+        """ 
+        Assign each word with an index. Make two dictionaries, self.word2idx and self.idx2word. One maps word to index, the other maps index to word.
         Arguments:
-            vocab_size: The maximum number of characters to assign indices.
+            wordvec_path: The pretrained word embedding. I use 'glove-wiki-gigaword-100' or 'glove-wiki-gigaword-200'.
         """
         print('create new tokenizer')
         vocabulary_word2index = {}
@@ -88,15 +88,36 @@ class DataManager:
 
     
     def save_tokenizer(self, word2idx_path, idx2word_path):
+        """
+        Serialize and save self.word2idx and self.idx2word.
+        Arguments:
+            word2idx_path: The location to store word2idx
+            idx2word_path: The location to store idx2word
+        """
         pickle.dump(self.word2idx, open(word2idx_path, 'wb'))
         pickle.dump(self.idx2word, open(idx2word_path, 'wb'))
 
     def load_tokenizer(self, word2idx_path, idx2word_path):
+        """
+        Load and deserialize word2idx and idx2word.
+        Arguments:
+            word2idx_path: The location of word2idx.pkl
+            idx2word_path: The location of idx2word.pkl
+        """
         print('load tokenizer from %s' % word2idx_path)
         self.word2idx = pickle.load(open(word2idx_path, 'rb'))
         self.idx2word = pickle.load(open(idx2word_path, 'rb'))
 
     def embedding_matrix(self, word2vec_model_path, worddim):
+        """
+        Make an embedding_matrix according to pretrained word embeddings and word2idx
+        Arguments:
+            word2vec_model_path: The pretrained word embedding. I use 'glove-wiki-gigaword-100' or 'glove-wiki-gigaword-200' 
+            worddim: 100 or 200
+        Returns:
+            word_index: self.word2idx
+            embedding_matrix: A 2D numpy array
+        """
         print('making embedding matrix')
         word_index = self.word2idx
         index_word = self.idx2word
@@ -125,9 +146,10 @@ class DataManager:
         return word_index, embedding_matrix
     
     def to_sequence(self, qmaxlen, cmaxlen):
-        """ Turn string to sequence of indices represented by a numpy array.
+        """ Turn strings in self.data to sequences of indices represented by a numpy array.
         Arguments:
-            maxlen: Pad the word sequence to maxlen.
+            qmaxlen: The maximum length of question sentence.
+            cmaxlen: The maximum length of comment sentence.
         """
         self.qmaxlen = qmaxlen
         self.cmaxlen = cmaxlen
@@ -153,11 +175,20 @@ class DataManager:
     
     
     def to_category(self):
+        """
+        Turn integer label into numpy array
+        e.g. 0 -> np.array([1,0]), 1 -> np.array([0,1])
+        """
         for key in self.data:
             if len(self.data[key]) == 2:
                 self.data[key][1] = np.array(to_categorical(self.data[key][1]))
     
     def get_data(self, key):
+        """
+        Get training or testing data
+        Arguments:
+            key: "train" or test"
+        """
         if key == 'train':
             return self.data[key][0], self.data[key][1]
         if key == 'test':
