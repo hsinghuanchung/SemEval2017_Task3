@@ -20,6 +20,8 @@ def read_data(path, model, task):
 	ans = []
 	R_num = []
 	C_num = []
+	# test data format ORGQ+++$$$+++RELQ+++$$$+++RELC1+++$$$+++....+++$$$+++RELC10
+	# according to different task get different sentence
 	if task == 'taskA':
 		with open(path, 'r', encoding='utf8') as fp:
 			for line in fp:
@@ -49,12 +51,14 @@ def read_data(path, model, task):
 	return np.array(question), np.array(ans), np.array(R_num), np.array(C_num)
 
 def main():
+	# parse arguments
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--task', type=str)
 	parser.add_argument('--w2v', type=str)
 	parser.add_argument('--model_name', type=str)
 	parser.add_argument('--output_name', type=str)
 	args = parser.parse_args()
+	# load data and word2vec model
 	data_path = 'test_data/testing_data.txt'
 	w2v = Word2Vec.load(args.w2v)
 	question, answer, R_num, C_num = read_data(data_path, w2v, args.task)
@@ -62,12 +66,16 @@ def main():
 	print(len(answer))
 	print(len(R_num))
 	print(len(C_num))
+	# pad sentence to the same length
 	question_pad = pad_sequences(question, maxlen=50, dtype='float32', padding='post', value=w2v.wv['PAD'])
 	answer_pad = pad_sequences(answer, maxlen=50, dtype='float32', padding='post', value=w2v.wv['PAD'])
+	# load NN model
 	model = load_model(args.model_name)
+	# predict score
 	ans = model.predict([question_pad,answer_pad])
 	with open(args.output_name, 'w', encoding='utf8') as fp:
 		for i in range(len(ans)):
+			# set label to true if score > 0.5, else false
 			if ans[i] > 0.5:
 				fp.write(str(R_num[i]) + '\t' + str(C_num[i]) + '\t' + '0' + '\t' + str(ans[i][0]) + '\t' + 'true\n')
 			else:
