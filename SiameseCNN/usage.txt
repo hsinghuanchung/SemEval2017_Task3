@@ -1,0 +1,6 @@
+training CNN model:
+	python main.py --task [task] --data_path [data path] --model_name [model name to save]
+testing:
+	python predict.py --task [task] --w2v [word2vec model] --model_name [NN model] --output_name [output file name]
+training word2vec model:
+	python word2vec.py --data_path [data path] --model_name [model name to save]
