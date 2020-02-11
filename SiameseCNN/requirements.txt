@@ -16,7 +16,7 @@ cycler==0.10.0
 Cython==0.28.3
 decorator==4.3.0
 dill==0.2.8.2
-Django==2.0.4
+Django==2.2.10
 docutils==0.14
 future==0.16.0
 gast==0.2.0
