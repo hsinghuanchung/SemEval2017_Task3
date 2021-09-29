@@ -37,7 +37,7 @@ Mako==1.0.3
 Markdown==2.6.9
 MarkupSafe==0.23
 matplotlib==2.2.2
-nltk==3.4
+nltk==3.6.3
 numpy==1.14.4
 oauthlib==1.0.3
 onboard==1.2.0
