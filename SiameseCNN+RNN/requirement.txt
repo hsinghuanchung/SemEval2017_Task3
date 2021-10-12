@@ -41,7 +41,7 @@ nltk==3.4
 numpy==1.14.4
 oauthlib==1.0.3
 onboard==1.2.0
-opencv-python==3.4.1.15
+opencv-python==4.2.0.32
 padme==1.1.1
 pandas==0.23.4
 pexpect==4.0.1
