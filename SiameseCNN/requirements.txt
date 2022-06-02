@@ -26,7 +26,7 @@ graphviz==0.8.3
 grpcio==1.11.0
 gym==0.10.5
 h5py==2.7.1
-html5lib==0.9999999
+html5lib==0.99999999
 idna==2.6
 image==1.5.20
 imageio==2.3.0
