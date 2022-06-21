@@ -38,7 +38,7 @@ Markdown==2.6.9
 MarkupSafe==0.23
 matplotlib==2.2.2
 nltk==3.4
-numpy==1.14.4
+numpy==1.22.0
 oauthlib==1.0.3
 onboard==1.2.0
 opencv-python==3.4.1.15
